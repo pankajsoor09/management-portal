@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -13,10 +13,29 @@ const Signup: React.FC = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
 
   const { signup } = useAuth();
   const { showToast } = useToast();
   const navigate = useNavigate();
+
+  const passwordChecks = useMemo(() => ({
+    minLength: password.length >= 8,
+    hasLowercase: /[a-z]/.test(password),
+    hasUppercase: /[A-Z]/.test(password),
+    hasNumber: /\d/.test(password),
+    hasSpecial: /[!@#$%^&*(),.?":{}|<>]/.test(password),
+  }), [password]);
+
+  const passwordStrength = useMemo(() => {
+    const checks = Object.values(passwordChecks);
+    const passed = checks.filter(Boolean).length;
+    if (passed <= 2) return { level: 'weak', color: '#ef4444', width: '33%' };
+    if (passed <= 4) return { level: 'medium', color: '#f59e0b', width: '66%' };
+    return { level: 'strong', color: '#10b981', width: '100%' };
+  }, [passwordChecks]);
+
+  const passwordsMatch = password === confirmPassword && confirmPassword !== '';
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
@@ -33,14 +52,9 @@ const Signup: React.FC = () => {
 
     if (!password) {
       newErrors.password = 'Password is required';
-    } else if (password.length < 8) {
-      newErrors.password = 'Password must be at least 8 characters';
-    } else if (!/(?=.*[a-z])/.test(password)) {
-      newErrors.password = 'Password must contain a lowercase letter';
-    } else if (!/(?=.*[A-Z])/.test(password)) {
-      newErrors.password = 'Password must contain an uppercase letter';
-    } else if (!/(?=.*\d)/.test(password)) {
-      newErrors.password = 'Password must contain a number';
+    } else if (!passwordChecks.minLength || !passwordChecks.hasLowercase ||
+               !passwordChecks.hasUppercase || !passwordChecks.hasNumber) {
+      newErrors.password = 'Password does not meet requirements';
     }
 
     if (!confirmPassword) {
@@ -71,6 +85,10 @@ const Signup: React.FC = () => {
     }
   };
 
+  const handleBlur = (field: string) => {
+    setTouched({ ...touched, [field]: true });
+  };
+
   return (
     <div className="auth-container">
       <div className="auth-card">
@@ -83,7 +101,8 @@ const Signup: React.FC = () => {
             type="text"
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
-            error={errors.fullName}
+            onBlur={() => handleBlur('fullName')}
+            error={touched.fullName && !fullName.trim() ? 'Full name is required' : errors.fullName}
             placeholder="Enter your full name"
             autoComplete="name"
           />
@@ -93,30 +112,76 @@ const Signup: React.FC = () => {
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            error={errors.email}
+            onBlur={() => handleBlur('email')}
+            error={touched.email && !email ? 'Email is required' : errors.email}
             placeholder="Enter your email"
             autoComplete="email"
           />
 
-          <Input
-            label="Password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            error={errors.password}
-            placeholder="Create a password"
-            autoComplete="new-password"
-          />
+          <div className="password-section">
+            <Input
+              label="Password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              onBlur={() => handleBlur('password')}
+              error={errors.password}
+              placeholder="Create a password"
+              autoComplete="new-password"
+            />
 
-          <Input
-            label="Confirm Password"
-            type="password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            error={errors.confirmPassword}
-            placeholder="Confirm your password"
-            autoComplete="new-password"
-          />
+            {password && (
+              <div className="password-strength">
+                <div className="strength-bar">
+                  <div
+                    className="strength-fill"
+                    style={{ width: passwordStrength.width, backgroundColor: passwordStrength.color }}
+                  />
+                </div>
+                <span className="strength-text" style={{ color: passwordStrength.color }}>
+                  {passwordStrength.level}
+                </span>
+              </div>
+            )}
+
+            {password && (
+              <ul className="password-requirements">
+                <li className={passwordChecks.minLength ? 'valid' : 'invalid'}>
+                  {passwordChecks.minLength ? '✓' : '○'} At least 8 characters
+                </li>
+                <li className={passwordChecks.hasUppercase ? 'valid' : 'invalid'}>
+                  {passwordChecks.hasUppercase ? '✓' : '○'} One uppercase letter
+                </li>
+                <li className={passwordChecks.hasLowercase ? 'valid' : 'invalid'}>
+                  {passwordChecks.hasLowercase ? '✓' : '○'} One lowercase letter
+                </li>
+                <li className={passwordChecks.hasNumber ? 'valid' : 'invalid'}>
+                  {passwordChecks.hasNumber ? '✓' : '○'} One number
+                </li>
+                <li className={passwordChecks.hasSpecial ? 'valid' : 'invalid'}>
+                  {passwordChecks.hasSpecial ? '✓' : '○'} One special character (optional)
+                </li>
+              </ul>
+            )}
+          </div>
+
+          <div className="confirm-password-section">
+            <Input
+              label="Confirm Password"
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              onBlur={() => handleBlur('confirmPassword')}
+              error={errors.confirmPassword}
+              placeholder="Confirm your password"
+              autoComplete="new-password"
+            />
+            {confirmPassword && (
+              <div className={`password-match ${passwordsMatch ? 'match' : 'no-match'}`}>
+                {passwordsMatch ? '✓ Passwords match' : '✕ Passwords do not match'}
+              </div>
+            )}
+          </div>
 
           <Button type="submit" fullWidth loading={loading}>
             Create Account
