@@ -23,7 +23,7 @@ const Navbar: React.FC = () => {
         </Link>
 
         <div className="navbar-menu">
-          {user?.role === 'admin' && (
+          {(user?.role === 'admin' || user?.role === 'superadmin') && (
             <Link
               to="/admin/dashboard"
               className={`navbar-link ${isActive('/admin/dashboard') ? 'active' : ''}`}

@@ -47,12 +47,14 @@ export const userAPI = {
 };
 
 export const adminAPI = {
-  getUsers: (page: number = 1, limit: number = 10) =>
-    api.get(`/admin/users?page=${page}&limit=${limit}`),
+  getUsers: (page: number = 1, limit: number = 10, search: string = '') =>
+    api.get(`/admin/users?page=${page}&limit=${limit}&search=${encodeURIComponent(search)}`),
   activateUser: (userId: string) =>
     api.put(`/admin/users/${userId}/activate`),
   deactivateUser: (userId: string) =>
     api.put(`/admin/users/${userId}/deactivate`),
+  deleteUser: (userId: string) =>
+    api.delete(`/admin/users/${userId}`),
 };
 
 export default api;
