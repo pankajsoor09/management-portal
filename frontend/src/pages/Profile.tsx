@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import { usePasswordValidation } from '../hooks/usePasswordValidation';
 import { userAPI } from '../services/api';
 import Input from '../components/Input';
 import Button from '../components/Button';
 import Spinner from '../components/Spinner';
+import PasswordRequirements from '../components/PasswordRequirements';
 import './Profile.css';
 
 const Profile: React.FC = () => {
@@ -23,6 +25,11 @@ const Profile: React.FC = () => {
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
   const [passwordErrors, setPasswordErrors] = useState<Record<string, string>>({});
   const [passwordLoading, setPasswordLoading] = useState(false);
+
+  const { passwordChecks, passwordStrength, passwordsMatch, isValid } = usePasswordValidation(
+    newPassword,
+    confirmNewPassword
+  );
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -102,19 +109,13 @@ const Profile: React.FC = () => {
 
     if (!newPassword) {
       errors.newPassword = 'New password is required';
-    } else if (newPassword.length < 8) {
-      errors.newPassword = 'Password must be at least 8 characters';
-    } else if (!/(?=.*[a-z])/.test(newPassword)) {
-      errors.newPassword = 'Password must contain a lowercase letter';
-    } else if (!/(?=.*[A-Z])/.test(newPassword)) {
-      errors.newPassword = 'Password must contain an uppercase letter';
-    } else if (!/(?=.*\d)/.test(newPassword)) {
-      errors.newPassword = 'Password must contain a number';
+    } else if (!isValid) {
+      errors.newPassword = 'Password does not meet requirements';
     }
 
     if (!confirmNewPassword) {
       errors.confirmNewPassword = 'Please confirm your new password';
-    } else if (newPassword !== confirmNewPassword) {
+    } else if (!passwordsMatch) {
       errors.confirmNewPassword = 'Passwords do not match';
     }
 
@@ -196,22 +197,42 @@ const Profile: React.FC = () => {
               error={passwordErrors.currentPassword}
               autoComplete="current-password"
             />
-            <Input
-              label="New Password"
-              type="password"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              error={passwordErrors.newPassword}
-              autoComplete="new-password"
-            />
-            <Input
-              label="Confirm New Password"
-              type="password"
-              value={confirmNewPassword}
-              onChange={(e) => setConfirmNewPassword(e.target.value)}
-              error={passwordErrors.confirmNewPassword}
-              autoComplete="new-password"
-            />
+            <div className="password-field-group">
+              <Input
+                label="New Password"
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                error={passwordErrors.newPassword}
+                autoComplete="new-password"
+              />
+              <PasswordRequirements
+                password={newPassword}
+                passwordChecks={passwordChecks}
+                passwordStrength={passwordStrength}
+                showMatch={false}
+              />
+            </div>
+            <div className="password-field-group">
+              <Input
+                label="Confirm New Password"
+                type="password"
+                value={confirmNewPassword}
+                onChange={(e) => setConfirmNewPassword(e.target.value)}
+                error={passwordErrors.confirmNewPassword}
+                autoComplete="new-password"
+              />
+              <PasswordRequirements
+                password={newPassword}
+                confirmPassword={confirmNewPassword}
+                passwordChecks={passwordChecks}
+                passwordStrength={passwordStrength}
+                passwordsMatch={passwordsMatch}
+                showStrength={false}
+                showRequirements={false}
+                showMatch={true}
+              />
+            </div>
             <div className="profile-actions">
               <Button type="submit" loading={passwordLoading}>
                 Change Password

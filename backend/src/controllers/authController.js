@@ -60,7 +60,7 @@ const login = async (req, res, next) => {
     }
 
     if (user.status === 'inactive') {
-      return sendError(res, 'Your account has been deactivated', 401);
+      return sendError(res, 'Your account is inactive.', 403);
     }
 
     user.lastLogin = new Date();

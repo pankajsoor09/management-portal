@@ -1,9 +1,11 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import { usePasswordValidation } from '../hooks/usePasswordValidation';
 import Input from '../components/Input';
 import Button from '../components/Button';
+import PasswordRequirements from '../components/PasswordRequirements';
 import './Auth.css';
 
 const Signup: React.FC = () => {
@@ -20,23 +22,10 @@ const Signup: React.FC = () => {
   const { showToast } = useToast();
   const navigate = useNavigate();
 
-  const passwordChecks = useMemo(() => ({
-    minLength: password.length >= 8,
-    hasLowercase: /[a-z]/.test(password),
-    hasUppercase: /[A-Z]/.test(password),
-    hasNumber: /\d/.test(password),
-    hasSpecial: /[!@#$%^&*(),.?":{}|<>]/.test(password),
-  }), [password]);
-
-  const passwordStrength = useMemo(() => {
-    const checks = Object.values(passwordChecks);
-    const passed = checks.filter(Boolean).length;
-    if (passed <= 2) return { level: 'weak', color: '#ef4444', width: '33%' };
-    if (passed <= 4) return { level: 'medium', color: '#f59e0b', width: '66%' };
-    return { level: 'strong', color: '#10b981', width: '100%' };
-  }, [passwordChecks]);
-
-  const passwordsMatch = password === confirmPassword && confirmPassword !== '';
+  const { passwordChecks, passwordStrength, passwordsMatch, isValid } = usePasswordValidation(
+    password,
+    confirmPassword
+  );
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
@@ -53,8 +42,7 @@ const Signup: React.FC = () => {
 
     if (!password) {
       newErrors.password = 'Password is required';
-    } else if (!passwordChecks.minLength || !passwordChecks.hasLowercase ||
-               !passwordChecks.hasUppercase || !passwordChecks.hasNumber) {
+    } else if (!isValid) {
       newErrors.password = 'Password does not meet requirements';
     }
 
@@ -90,8 +78,7 @@ const Signup: React.FC = () => {
     setTouched({ ...touched, [field]: true });
   };
 
-  const showPasswordRequirements = passwordFocused || (password && !passwordChecks.minLength ||
-    !passwordChecks.hasLowercase || !passwordChecks.hasUppercase || !passwordChecks.hasNumber);
+  const showPasswordRequirements = passwordFocused || (!!password && !isValid);
 
   return (
     <div className="auth-container">
@@ -137,40 +124,13 @@ const Signup: React.FC = () => {
               placeholder="Create a password"
               autoComplete="new-password"
             />
-
-            {password && (
-              <div className="password-strength">
-                <div className="strength-bar">
-                  <div
-                    className="strength-fill"
-                    style={{ width: passwordStrength.width, backgroundColor: passwordStrength.color }}
-                  />
-                </div>
-                <span className="strength-text" style={{ color: passwordStrength.color }}>
-                  {passwordStrength.level}
-                </span>
-              </div>
-            )}
-
-            {showPasswordRequirements && (
-              <ul className="password-requirements">
-                <li className={passwordChecks.minLength ? 'valid' : 'invalid'}>
-                  {passwordChecks.minLength ? '✓' : '○'} At least 8 characters
-                </li>
-                <li className={passwordChecks.hasUppercase ? 'valid' : 'invalid'}>
-                  {passwordChecks.hasUppercase ? '✓' : '○'} One uppercase letter
-                </li>
-                <li className={passwordChecks.hasLowercase ? 'valid' : 'invalid'}>
-                  {passwordChecks.hasLowercase ? '✓' : '○'} One lowercase letter
-                </li>
-                <li className={passwordChecks.hasNumber ? 'valid' : 'invalid'}>
-                  {passwordChecks.hasNumber ? '✓' : '○'} One number
-                </li>
-                <li className={passwordChecks.hasSpecial ? 'valid' : 'invalid'}>
-                  {passwordChecks.hasSpecial ? '✓' : '○'} One special character (optional)
-                </li>
-              </ul>
-            )}
+            <PasswordRequirements
+              password={password}
+              passwordChecks={passwordChecks}
+              passwordStrength={passwordStrength}
+              showRequirements={showPasswordRequirements}
+              showMatch={false}
+            />
           </div>
 
           <div className="confirm-password-section">
@@ -184,11 +144,16 @@ const Signup: React.FC = () => {
               placeholder="Confirm your password"
               autoComplete="new-password"
             />
-            {confirmPassword && (
-              <div className={`password-match ${passwordsMatch ? 'match' : 'no-match'}`}>
-                {passwordsMatch ? '✓ Passwords match' : '✕ Passwords do not match'}
-              </div>
-            )}
+            <PasswordRequirements
+              password={password}
+              confirmPassword={confirmPassword}
+              passwordChecks={passwordChecks}
+              passwordStrength={passwordStrength}
+              passwordsMatch={passwordsMatch}
+              showStrength={false}
+              showRequirements={false}
+              showMatch={true}
+            />
           </div>
 
           <Button type="submit" fullWidth loading={loading}>
