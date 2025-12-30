@@ -14,6 +14,7 @@ const Signup: React.FC = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const [passwordFocused, setPasswordFocused] = useState(false);
 
   const { signup } = useAuth();
   const { showToast } = useToast();
@@ -89,6 +90,9 @@ const Signup: React.FC = () => {
     setTouched({ ...touched, [field]: true });
   };
 
+  const showPasswordRequirements = passwordFocused || (password && !passwordChecks.minLength ||
+    !passwordChecks.hasLowercase || !passwordChecks.hasUppercase || !passwordChecks.hasNumber);
+
   return (
     <div className="auth-container">
       <div className="auth-card">
@@ -124,7 +128,11 @@ const Signup: React.FC = () => {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              onBlur={() => handleBlur('password')}
+              onFocus={() => setPasswordFocused(true)}
+              onBlur={() => {
+                setPasswordFocused(false);
+                handleBlur('password');
+              }}
               error={errors.password}
               placeholder="Create a password"
               autoComplete="new-password"
@@ -144,7 +152,7 @@ const Signup: React.FC = () => {
               </div>
             )}
 
-            {password && (
+            {showPasswordRequirements && (
               <ul className="password-requirements">
                 <li className={passwordChecks.minLength ? 'valid' : 'invalid'}>
                   {passwordChecks.minLength ? '✓' : '○'} At least 8 characters
