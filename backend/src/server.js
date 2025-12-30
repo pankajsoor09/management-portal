@@ -3,6 +3,7 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const connectDB = require('./config/db');
 const errorHandler = require('./middleware/errorHandler');
+const { authLimiter, apiLimiter } = require('./middleware/rateLimiter');
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const adminRoutes = require('./routes/adminRoutes');
@@ -17,11 +18,15 @@ app.use(cors());
 
 app.use(express.json());
 
+// Apply general rate limiting to all API routes
+app.use('/api', apiLimiter);
+
 app.get('/api/health', (req, res) => {
   res.json({ success: true, message: 'API is running' });
 });
 
-app.use('/api/auth', authRoutes);
+// Apply stricter rate limiting to auth routes
+app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/admin', adminRoutes);
 
