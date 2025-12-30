@@ -2,20 +2,22 @@ import React, { useState } from 'react';
 import './Input.css';
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  label: string;
+  label?: string;
   error?: string;
 }
 
 const Input: React.FC<InputProps> = ({ label, error, id, type, ...props }) => {
-  const inputId = id || label.toLowerCase().replace(/\s+/g, '-');
+  const inputId = id || (label ? label.toLowerCase().replace(/\s+/g, '-') : undefined);
   const [showPassword, setShowPassword] = useState(false);
   const isPassword = type === 'password';
 
   return (
     <div className="input-group">
-      <label htmlFor={inputId} className="input-label">
-        {label}
-      </label>
+      {label && (
+        <label htmlFor={inputId} className="input-label">
+          {label}
+        </label>
+      )}
       <div className="input-wrapper">
         <input
           id={inputId}

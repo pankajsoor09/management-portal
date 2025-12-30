@@ -18,7 +18,8 @@ const HomeRedirect: React.FC = () => {
 
   if (!user) return <Navigate to="/login" replace />;
 
-  return <Navigate to={user.role === 'admin' ? '/admin/dashboard' : '/profile'} replace />;
+  const isAdmin = user.role === 'admin' || user.role === 'superadmin';
+  return <Navigate to={isAdmin ? '/admin/dashboard' : '/profile'} replace />;
 };
 
 const App: React.FC = () => {
