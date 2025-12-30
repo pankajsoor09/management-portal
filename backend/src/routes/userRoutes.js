@@ -3,6 +3,7 @@ const { getProfile, updateProfile, changePassword } = require('../controllers/us
 const { protect } = require('../middleware/auth');
 const validate = require('../middleware/validate');
 const { updateProfileValidation, changePasswordValidation } = require('../utils/validators');
+const { strictLimiter } = require('../middleware/rateLimiter');
 
 const router = express.Router();
 
@@ -10,6 +11,6 @@ router.use(protect);
 
 router.get('/profile', getProfile);
 router.put('/profile', updateProfileValidation, validate, updateProfile);
-router.put('/change-password', changePasswordValidation, validate, changePassword);
+router.put('/change-password', strictLimiter, changePasswordValidation, validate, changePassword);
 
 module.exports = router;

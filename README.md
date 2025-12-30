@@ -332,6 +332,31 @@ db.users.updateOne(
 - CORS configuration
 - Environment variables for sensitive data
 - Inactive user login prevention
+- **Rate limiting** to prevent brute force attacks
+
+## Rate Limiting
+
+The API implements rate limiting to protect against abuse and brute force attacks:
+
+| Endpoint | Limit | Window |
+|----------|-------|--------|
+| Login/Signup (`/api/auth/*`) | 5 requests | 1 minute |
+| Password Change | 3 requests | 1 minute |
+| General API | 100 requests | 1 minute |
+
+**Rate Limit Response (429 Too Many Requests):**
+```json
+{
+  "success": false,
+  "error": "Too many attempts. Please try again after 1 minute.",
+  "statusCode": 429
+}
+```
+
+Rate limit headers are included in responses:
+- `RateLimit-Limit`: Maximum requests allowed
+- `RateLimit-Remaining`: Requests remaining in current window
+- `RateLimit-Reset`: Time when the rate limit resets
 
 ## Password Requirements
 
