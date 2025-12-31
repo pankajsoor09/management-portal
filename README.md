@@ -2,14 +2,40 @@
 
 A full-stack web application for managing user accounts with role-based access control, built with Node.js/Express backend and React frontend.
 
+## Live Demo
+
+| Service | URL |
+|---------|-----|
+| **Frontend** | https://management-portal-three.vercel.app |
+| **Backend API** | https://management-portal-np7g.onrender.com |
+
+### Demo Accounts
+
+| Role | Email | Password |
+|------|-------|----------|
+| **Super Admin** | pankajsoor09@gmail.com | Abcd@#$54321 |
+| **Admin** | pankajsoor092@gmail.com | Abcd@1234 |
+
+> **Note:** Backend may take 30-50 seconds to wake up on first request (Render free tier limitation).
+
 ## Project Overview
 
 This User Management System provides:
 - User authentication (signup, login, logout)
-- Role-based access control (admin/user roles)
+- Role-based access control (superadmin/admin/user roles)
 - User profile management
 - Admin dashboard for user management
 - Account activation/deactivation
+- User search functionality
+- Permanent user deletion (superadmin only)
+
+## Role Hierarchy
+
+| Role | Permissions |
+|------|-------------|
+| **Super Admin** | View all users, activate/deactivate admins & users, delete users permanently, cannot be deactivated |
+| **Admin** | View admins & users (not superadmins), activate/deactivate users only |
+| **User** | View and edit own profile, change password |
 
 ## Tech Stack
 
@@ -20,6 +46,7 @@ This User Management System provides:
 - **Authentication**: JWT (JSON Web Tokens)
 - **Password Hashing**: bcryptjs
 - **Validation**: express-validator
+- **Rate Limiting**: express-rate-limit
 
 ### Frontend
 - **Framework**: React 18 with TypeScript
@@ -32,18 +59,23 @@ This User Management System provides:
 ### Authentication
 - User registration with email validation
 - Password strength requirements (8+ chars, uppercase, lowercase, number)
+- Password strength indicator with real-time feedback
 - Secure login with JWT tokens
 - Protected routes with token verification
 - Last login timestamp tracking
+- Inactive user login prevention with clear error message
 
-### User Management (Admin)
+### User Management (Admin/Super Admin)
 - View all users with pagination
+- Search users by name or email
 - Activate/deactivate user accounts
-- Role-based access (admin-only)
+- Delete users permanently (superadmin only)
+- Role-based permissions
+- Confirmation modals for all actions
 
 ### User Profile
 - View and edit profile information
-- Change password functionality
+- Change password with validation
 - Email update with duplicate check
 
 ## Project Structure
@@ -54,6 +86,7 @@ project-root/
 │   ├── src/
 │   │   ├── components/     # Reusable UI components
 │   │   ├── context/        # React context providers
+│   │   ├── hooks/          # Custom React hooks
 │   │   ├── pages/          # Page components
 │   │   ├── services/       # API service functions
 │   │   ├── types/          # TypeScript type definitions
@@ -108,7 +141,6 @@ PORT=5000
 MONGODB_URI=mongodb+srv://<username>:<password>@<cluster>.mongodb.net/user-management
 JWT_SECRET=your-super-secret-jwt-key-change-this
 JWT_EXPIRE=7d
-FRONTEND_URL=http://localhost:3000
 ```
 
 5. Start the server:
@@ -149,21 +181,24 @@ npm start
 
 The app will be available at `http://localhost:3000`
 
-## Environment Variables
+## Deployment
 
-### Backend
-| Variable | Description | Example |
-|----------|-------------|---------|
-| PORT | Server port | 5000 |
-| MONGODB_URI | MongoDB connection string | mongodb+srv://... |
-| JWT_SECRET | Secret key for JWT signing | your-secret-key |
-| JWT_EXPIRE | Token expiration time | 7d |
-| FRONTEND_URL | Frontend URL for CORS | http://localhost:3000 |
+### MongoDB Atlas
+1. Create free M0 cluster
+2. Add `0.0.0.0/0` to Network Access
+3. Get connection string
 
-### Frontend
-| Variable | Description | Example |
-|----------|-------------|---------|
-| REACT_APP_API_URL | Backend API base URL | http://localhost:5000/api |
+### Render (Backend)
+1. Create Web Service
+2. Set Root Directory: `backend`
+3. Build Command: `npm install`
+4. Start Command: `npm start`
+5. Add environment variables
+
+### Vercel (Frontend)
+1. Import GitHub repo
+2. Set Root Directory: `frontend`
+3. Add `REACT_APP_API_URL` environment variable
 
 ## API Documentation
 
@@ -181,24 +216,6 @@ Register a new user.
 }
 ```
 
-**Response:**
-```json
-{
-  "success": true,
-  "data": {
-    "user": {
-      "id": "...",
-      "email": "user@example.com",
-      "fullName": "John Doe",
-      "role": "user",
-      "status": "active"
-    },
-    "token": "jwt-token..."
-  },
-  "message": "User registered successfully"
-}
-```
-
 #### POST /api/auth/login
 Authenticate user and get token.
 
@@ -210,25 +227,8 @@ Authenticate user and get token.
 }
 ```
 
-**Response:**
-```json
-{
-  "success": true,
-  "data": {
-    "user": { ... },
-    "token": "jwt-token..."
-  },
-  "message": "Login successful"
-}
-```
-
 #### GET /api/auth/me
 Get current authenticated user. (Protected)
-
-**Headers:**
-```
-Authorization: Bearer <token>
-```
 
 #### POST /api/auth/logout
 Logout user. (Protected)
@@ -241,49 +241,18 @@ Get current user's profile.
 #### PUT /api/user/profile
 Update user profile.
 
-**Request Body:**
-```json
-{
-  "fullName": "Updated Name",
-  "email": "newemail@example.com"
-}
-```
-
 #### PUT /api/user/change-password
 Change user password.
 
-**Request Body:**
-```json
-{
-  "currentPassword": "OldPassword123",
-  "newPassword": "NewPassword123"
-}
-```
-
-### Admin Endpoints (Admin Only)
+### Admin Endpoints (Admin/Super Admin Only)
 
 #### GET /api/admin/users
-Get all users with pagination.
+Get all users with pagination and search.
 
 **Query Parameters:**
 - `page` (default: 1)
 - `limit` (default: 10)
-
-**Response:**
-```json
-{
-  "success": true,
-  "data": {
-    "users": [...],
-    "pagination": {
-      "page": 1,
-      "limit": 10,
-      "total": 50,
-      "pages": 5
-    }
-  }
-}
-```
+- `search` (optional) - search by name or email
 
 #### PUT /api/admin/users/:userId/activate
 Activate a user account.
@@ -291,36 +260,8 @@ Activate a user account.
 #### PUT /api/admin/users/:userId/deactivate
 Deactivate a user account.
 
-## Testing
-
-### Run Backend Tests
-```bash
-cd backend
-npm test
-```
-
-The test suite includes:
-- User registration validation
-- Login with correct/incorrect credentials
-- Password hashing verification
-- Protected route authentication
-- Role-based access control
-
-## Creating an Admin User
-
-To create an admin user, you can either:
-
-1. **Use MongoDB Compass or Atlas UI:**
-   - Find the user document
-   - Change the `role` field from `"user"` to `"admin"`
-
-2. **Use MongoDB Shell:**
-```javascript
-db.users.updateOne(
-  { email: "admin@example.com" },
-  { $set: { role: "admin" } }
-)
-```
+#### DELETE /api/admin/users/:userId
+Permanently delete a user. (Super Admin only)
 
 ## Security Features
 
@@ -332,31 +273,15 @@ db.users.updateOne(
 - CORS configuration
 - Environment variables for sensitive data
 - Inactive user login prevention
-- **Rate limiting** to prevent brute force attacks
+- Rate limiting to prevent brute force attacks
 
 ## Rate Limiting
-
-The API implements rate limiting to protect against abuse and brute force attacks:
 
 | Endpoint | Limit | Window |
 |----------|-------|--------|
 | Login/Signup (`/api/auth/*`) | 5 requests | 1 minute |
 | Password Change | 3 requests | 1 minute |
 | General API | 100 requests | 1 minute |
-
-**Rate Limit Response (429 Too Many Requests):**
-```json
-{
-  "success": false,
-  "error": "Too many attempts. Please try again after 1 minute.",
-  "statusCode": 429
-}
-```
-
-Rate limit headers are included in responses:
-- `RateLimit-Limit`: Maximum requests allowed
-- `RateLimit-Remaining`: Requests remaining in current window
-- `RateLimit-Reset`: Time when the rate limit resets
 
 ## Password Requirements
 
@@ -365,27 +290,33 @@ Rate limit headers are included in responses:
 - At least one lowercase letter
 - At least one number
 
-## Error Response Format
+## Creating Admin/Super Admin Users
 
-All errors follow a consistent format:
+1. **Using MongoDB Atlas UI:**
+   - Find the user document in the `users` collection
+   - Change the `role` field to `"admin"` or `"superadmin"`
 
-```json
-{
-  "success": false,
-  "error": "Error message description",
-  "statusCode": 400
-}
+2. **Using MongoDB Shell:**
+```javascript
+// Create admin
+db.users.updateOne(
+  { email: "admin@example.com" },
+  { $set: { role: "admin" } }
+)
+
+// Create superadmin
+db.users.updateOne(
+  { email: "superadmin@example.com" },
+  { $set: { role: "superadmin" } }
+)
 ```
 
-## HTTP Status Codes
+## Testing
 
-- `200` - Success
-- `201` - Created
-- `400` - Bad Request
-- `401` - Unauthorized
-- `403` - Forbidden
-- `404` - Not Found
-- `500` - Internal Server Error
+```bash
+cd backend
+npm test
+```
 
 ## License
 

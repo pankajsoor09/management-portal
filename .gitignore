@@ -36,4 +36,4 @@ coverage/
 
 # Misc
 *.pem
-.cache/
+.cache/ 
