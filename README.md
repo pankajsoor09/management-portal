@@ -8,6 +8,7 @@ A full-stack web application for managing user accounts with role-based access c
 |---------|-----|
 | **Frontend** | https://management-portal-three.vercel.app |
 | **Backend API** | https://management-portal-np7g.onrender.com |
+| **API Documentation** | https://.postman.co/workspace/My-Workspace~1b0efec0-6595-4c86-84ac-06503e152580/request/45354103-7062f0b8-d532-4944-9375-2aac59815a11?action=share&creator=45354103&ctx=documentation&active-environment=45354103-69dea497-50c8-453b-b09b-5861178baf72 |
 
 ### Demo Accounts
 
