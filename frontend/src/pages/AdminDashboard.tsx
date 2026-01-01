@@ -188,6 +188,7 @@ const AdminDashboard: React.FC = () => {
         </form>
       </div>
 
+      {/* Desktop/Tablet Table View */}
       <div className="table-container">
         <table className="users-table">
           <thead>
@@ -240,6 +241,48 @@ const AdminDashboard: React.FC = () => {
             ))}
           </tbody>
         </table>
+      </div>
+
+      {/* Mobile Card View */}
+      <div className="user-cards">
+        {users.map((user) => (
+          <div key={user.id} className="user-card">
+            <div className="user-card-header">
+              <div>
+                <h3 className="user-card-name">{user.fullName}</h3>
+                <p className="user-card-email">{user.email}</p>
+              </div>
+              <div className="user-card-badges">
+                <span className={`badge badge-${user.role}`}>{user.role}</span>
+              </div>
+            </div>
+            <div className="user-card-body">
+              <div className="user-card-status">
+                <span className={`badge badge-${user.status}`}>{user.status}</span>
+              </div>
+              {canModifyUser(user) && (
+                <div className="user-card-actions">
+                  <Button
+                    variant={user.status === 'active' ? 'danger' : 'primary'}
+                    onClick={() => handleStatusChange(user)}
+                    disabled={actionLoading === user.id}
+                  >
+                    {user.status === 'active' ? 'Deactivate' : 'Activate'}
+                  </Button>
+                  {isSuperAdmin && (
+                    <Button
+                      variant="danger"
+                      onClick={() => handleDelete(user)}
+                      disabled={actionLoading === user.id}
+                    >
+                      Delete
+                    </Button>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
       </div>
 
       {users.length === 0 && (
