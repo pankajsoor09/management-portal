@@ -1,6 +1,6 @@
 # Mini User Management System
 
-A full-stack web application for managing user accounts with role-based access control, built with Node.js/Express backend and React frontend.
+A full-stack web application for managing user accounts with role-based access(superadmin/admin/user) control, built with Node.js/Express backend and React frontend.
 
 ## Live Demo
 
@@ -299,13 +299,11 @@ Permanently delete a user. (Super Admin only)
 
 2. **Using MongoDB Shell:**
 ```javascript
-// Create admin
 db.users.updateOne(
   { email: "admin@example.com" },
   { $set: { role: "admin" } }
 )
 
-// Create superadmin
 db.users.updateOne(
   { email: "superadmin@example.com" },
   { $set: { role: "superadmin" } }
@@ -318,7 +316,5 @@ db.users.updateOne(
 cd backend
 npm test
 ```
-
 ## License
-
 ISC
