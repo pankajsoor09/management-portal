@@ -21,6 +21,7 @@
   font-weight: 700;
   color: #3b82f6;
   text-decoration: none;
+  flex-shrink: 0;
 }
 
 .navbar-menu {
@@ -89,12 +90,83 @@
   background-color: #e5e7eb;
 }
 
-@media (max-width: 640px) {
+/* Hamburger button (hidden by default) */
+.navbar-toggle {
+  display: none;
+  background: none;
+  border: none;
+  padding: 0.5rem;
+  cursor: pointer;
+  color: #374151;
+}
+
+.navbar-toggle svg {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+/* Tablet: 768px */
+@media (max-width: 768px) {
   .navbar-container {
     gap: 1rem;
   }
 
+  .navbar-brand {
+    font-size: 1.125rem;
+  }
+
   .user-info {
     display: none;
+  }
+
+  .navbar-link {
+    padding: 0.5rem 0.625rem;
+    font-size: 0.8125rem;
+  }
+}
+
+/* Mobile: 480px - Show hamburger */
+@media (max-width: 480px) {
+  .navbar-container {
+    justify-content: space-between;
+  }
+
+  .navbar-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    order: 3;
+  }
+
+  .navbar-menu {
+    display: none;
+  }
+
+  /* Show mobile menu when open */
+  .navbar-menu.menu-open {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: 4rem;
+    left: 0;
+    right: 0;
+    background: white;
+    padding: 0.5rem 1rem 1rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    gap: 0.25rem;
+  }
+
+  .navbar-menu.menu-open .navbar-link {
+    padding: 0.75rem 1rem;
+    font-size: 0.9375rem;
+  }
+
+  .navbar-user {
+    gap: 0.75rem;
+  }
+
+  .logout-btn {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8125rem;
   }
 }

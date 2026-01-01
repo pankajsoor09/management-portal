@@ -71,3 +71,19 @@
     transform: rotate(360deg);
   }
 }
+
+/* Mobile: Touch-friendly sizing */
+@media (max-width: 480px) {
+  .btn {
+    padding: 0.5rem 0.875rem;
+    font-size: 0.8125rem;
+    min-height: 2.5rem;
+  }
+}
+
+/* Small button variant */
+.btn-sm {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.75rem;
+  min-height: auto;
+}

@@ -1,9 +1,12 @@
 .toast-container {
   position: fixed;
   top: 1rem;
-  right: 42rem;
+  right: 1rem;
   z-index: 2000;
+  display: flex;
+  flex-direction: column;
   gap: 0.5rem;
+  max-width: calc(100vw - 2rem);
 }
 
 .toast {
@@ -51,9 +54,52 @@
 .toast-icon {
   font-weight: bold;
   font-size: 1rem;
+  flex-shrink: 0;
 }
 
 .toast-message {
   font-size: 0.875rem;
   flex: 1;
+  word-break: break-word;
+}
+
+/* Mobile: Full width toasts at bottom */
+@media (max-width: 480px) {
+  .toast-container {
+    top: auto;
+    bottom: 1rem;
+    left: 1rem;
+    right: 1rem;
+    align-items: stretch;
+  }
+
+  .toast {
+    min-width: unset;
+    max-width: none;
+    width: 100%;
+  }
+
+  @keyframes slideIn {
+    from {
+      transform: translateY(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+}
+
+/* Tablet */
+@media (min-width: 481px) and (max-width: 768px) {
+  .toast-container {
+    right: 1.5rem;
+    top: 1.5rem;
+  }
+
+  .toast {
+    min-width: 280px;
+    max-width: 350px;
+  }
 }
