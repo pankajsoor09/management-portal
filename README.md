@@ -299,13 +299,11 @@ Permanently delete a user. (Super Admin only)
 
 2. **Using MongoDB Shell:**
 ```javascript
-// Create admin
 db.users.updateOne(
   { email: "admin@example.com" },
   { $set: { role: "admin" } }
 )
 
-// Create superadmin
 db.users.updateOne(
   { email: "superadmin@example.com" },
   { $set: { role: "superadmin" } }
