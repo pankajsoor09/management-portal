@@ -316,3 +316,5 @@ db.users.updateOne(
 cd backend
 npm test
 ```
+## License
+ISC
