@@ -1,4 +1,4 @@
-# Mini User Management System
+#User Management System
 
 A full-stack web application for managing user accounts with role-based access(superadmin/admin/user) control, built with Node.js/Express backend and React frontend.
 
